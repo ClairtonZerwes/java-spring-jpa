@@ -1,4 +1,4 @@
-package br.com.alura.serviceapi;
+package br.com.alura.screenmatch.serviceapi;
 
 import java.io.IOException;
 import java.net.URI;

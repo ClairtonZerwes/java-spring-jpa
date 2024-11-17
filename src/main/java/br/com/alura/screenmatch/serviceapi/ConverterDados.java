@@ -1,6 +1,5 @@
-package br.com.alura.serviceapi;
+package br.com.alura.screenmatch.serviceapi;
 
-import br.com.alura.model.DadosSerie;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -14,6 +13,8 @@ public class ConverterDados implements IConverterDados{
         try {
             return mapper.readValue(json, classe);
         } catch (JsonProcessingException e) {
+            // System.out.println(e.getOriginalMessage());
+            System.out.println(e.getMessage());
             throw new RuntimeException(e);
         }
     }

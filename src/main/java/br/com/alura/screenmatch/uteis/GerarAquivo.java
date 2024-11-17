@@ -1,4 +1,4 @@
-package br.com.alura.uteis;
+package br.com.alura.screenmatch.uteis;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
