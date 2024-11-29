@@ -4,28 +4,33 @@ import br.com.alura.screenmatch.constantes.Constantes;
 import br.com.alura.screenmatch.model.DadosEpisodio;
 import br.com.alura.screenmatch.model.DadosSerie;
 import br.com.alura.screenmatch.model.DadosTemporada;
+import br.com.alura.screenmatch.model.Episodio;
 import br.com.alura.screenmatch.serviceapi.ConsumirDadosApi;
 import br.com.alura.screenmatch.serviceapi.ConverterDados;
 import br.com.alura.screenmatch.uteis.CodificarURL;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Scanner;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner ler = new Scanner(System.in);
     private ConsumirDadosApi consumirDadosApi = new ConsumirDadosApi();
     private ConverterDados converterDados = new ConverterDados();
-
     private static DateTimeFormatter formatoDataIMDB = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static DateTimeFormatter formatarDataBR = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
 
-    private static String formatarDataParaExibir(String dataLancamentoEpisodio) {
-        LocalDate dataFormatadaIMDB = LocalDate.parse(dataLancamentoEpisodio, formatoDataIMDB);
+    private static String formatarDataPadraoBrasil(String dataLancamentoEpisodio) {
+        LocalDate dataFormatadaIMDB;
+
+        try {
+            dataFormatadaIMDB = LocalDate.parse(dataLancamentoEpisodio, formatoDataIMDB);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
         return dataFormatadaIMDB.format(formatarDataBR);
     }
 
@@ -66,10 +71,47 @@ public class Principal {
             // System.out.println("\nTemporada " + numeroTemporada[0]);
             System.out.println("\nTemporada " + numeroTemporada.getAndIncrement());
             t.episodios().forEach(e -> {
-                System.out.println("Episodio " + (t.episodios().indexOf(e) + 1) + " - " + e.titulo() + " - Lançando em " + formatarDataParaExibir(e.dataLancamento()));
+                System.out.println("Episodio " + (t.episodios().indexOf(e) + 1) + " - " + e.titulo() + " - Lançando em " + formatarDataPadraoBrasil(e.dataLancamento()));
             });
             numeroTemporada.getAndIncrement();
             //numeroTemporada[0]++;
         });
+
+        List<DadosEpisodio> listaDadosEpisodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream())
+                .collect(Collectors.toList());
+
+        System.out.println("\n*** Top 5 Episodios ***");
+        listaDadosEpisodios.stream()
+                .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+        List<Episodio> episodios = temporadas.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .map(e -> new Episodio(t.numeroDaTemporada(), e))
+                ).collect(Collectors.toList());
+
+        episodios.forEach(System.out::println);
+
+        // Outro Exemplo manipulando Datas
+        DateTimeFormatter formatoDataBR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate data = LocalDate.now();
+        System.out.println("Data padrão BR (" + data + "): " + data.format(formatoDataBR));
+
+        Scanner leitura = new Scanner(System.in);
+        System.out.println("Informe a partir de qual ano para pesquisar os episodios.");
+        var ano = leitura.nextInt();
+        leitura.nextLine();
+        LocalDate dataBusca = LocalDate.of(ano, 1,1);
+
+        episodios.stream()
+                .filter(e -> e.getDataLancamento() != null && e.getDataLancamento().isAfter(dataBusca))
+                .forEach(e -> System.out.println(
+                        "Temporada: " + e.getTemporada() +
+                        " Episódio: " + e.getTitulo() +
+                        " Data Lançamento: " + e.getDataLancamento().format(formatoDataBR)
+                ));
     }
 }

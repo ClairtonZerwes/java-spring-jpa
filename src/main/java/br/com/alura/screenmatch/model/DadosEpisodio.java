@@ -13,7 +13,7 @@ public record DadosEpisodio(@JsonAlias("Title") String titulo,
                             @JsonAlias("Episode") @JsonDeserialize(using = GenericDeserializer.class) Integer numeroDoEpisodio,
                             @JsonAlias("imdbRating") @JsonDeserialize(using = GenericDeserializer.class) Double avaliacao,
                             */
-
+                            @JsonAlias("imdbRating") String avaliacao,
                             @JsonAlias("Released") String dataLancamento,
                             @JsonAlias("Runtime") Integer duracao,
                             @JsonAlias("Plot") String enredo) {
