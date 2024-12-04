@@ -96,12 +96,27 @@ public class Principal {
         episodios.forEach(System.out::println);
 
         // Outro Exemplo manipulando Datas
-        DateTimeFormatter formatoDataBR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatoDataBR = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //formatarDataPadraoBrasil()
         LocalDate data = LocalDate.now();
         System.out.println("Data padrão BR (" + data + "): " + data.format(formatoDataBR));
 
         Scanner leitura = new Scanner(System.in);
-        System.out.println("Informe a partir de qual ano para pesquisar os episodios.");
+        System.out.println("\nDigite um parte do título do episódio para pesquisar");
+        var parteDoTitulo = leitura.nextLine();
+        Optional<Episodio> episodioBuscado = episodios.stream()
+                        .filter(e -> e.getTitulo().toUpperCase().contains(parteDoTitulo.toUpperCase()))
+                        .findFirst();
+
+        if (episodioBuscado.isPresent()) {
+            System.out.println("Episódio Encontrado!!!");
+            System.out.println("Temporada: " + episodioBuscado.get().getTemporada());
+            System.out.println("Titulo: " + episodioBuscado.get().getTitulo());
+        } else {
+            System.out.println("Episódio não Encontrado.");
+        }
+
+
+        System.out.println("\nInforme a partir de qual ano para pesquisar os episodios.");
         var ano = leitura.nextInt();
         leitura.nextLine();
         LocalDate dataBusca = LocalDate.of(ano, 1,1);
@@ -113,5 +128,39 @@ public class Principal {
                         " Episódio: " + e.getTitulo() +
                         " Data Lançamento: " + e.getDataLancamento().format(formatoDataBR)
                 ));
+
+        // Obtendo Média da Avaliação por Temporada
+        System.out.println("\nImprimindo Média da Temporada - Por Notas das Avaliações!");
+        Map<Integer, Double> avaliacaoPorTemporada = episodios.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada,
+                        Collectors.averagingDouble(Episodio::getAvaliacao)));
+        System.out.println(avaliacaoPorTemporada);
+
+        // DoubleSummaryStatistics
+        DoubleSummaryStatistics est = episodios.stream()
+                .filter(e -> e.getAvaliacao() > 0.0)
+                .collect(Collectors.summarizingDouble(Episodio::getAvaliacao));
+        System.out.println("\nTrabalhando com DoubleSummaryStatistics (Todas Informações): " + est);
+        System.out.println("Quantidade: " + est.getCount());
+        System.out.println("Média Geral: " + est.getAverage());
+        System.out.println("Pior episódio: " + est.getMin());
+        System.out.println("Melhor episódio: " + est.getMax());
+
+        // Principal objetivo da função peek() e auxiliar em um Debug visual se as outras funções do stream()
+        // Estão de acordando com a lógica e filtrando e executando as operações como era esperado.
+        /*
+        System.out.println("\n*** Verificando etapas do filtro de dados com PEEK()[Olhadinha] ***\n *** Top 10 Episodios ***");
+        listaDadosEpisodios.stream()
+                .filter(e -> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .peek(e -> System.out.println("Primeiro Filtro N/A " + e))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .peek(e -> System.out.println("Ordenação " + e))
+                .limit(10)
+                .peek(e -> System.out.println("Limite " + e))
+                .map(e -> e.titulo().toUpperCase())
+                .peek(e -> System.out.println("Mapeamento " + e ))
+                .forEach(System.out::println);
+         */
     }
 }
