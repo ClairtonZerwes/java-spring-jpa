@@ -100,9 +100,9 @@ public class Principal {
         LocalDate data = LocalDate.now();
         System.out.println("Data padrão BR (" + data + "): " + data.format(formatoDataBR));
 
-        Scanner leitura = new Scanner(System.in);
+        //Scanner leitura = new Scanner(System.in);
         System.out.println("\nDigite um parte do título do episódio para pesquisar");
-        var parteDoTitulo = leitura.nextLine();
+        var parteDoTitulo = ler.nextLine();
         Optional<Episodio> episodioBuscado = episodios.stream()
                         .filter(e -> e.getTitulo().toUpperCase().contains(parteDoTitulo.toUpperCase()))
                         .findFirst();
@@ -117,8 +117,8 @@ public class Principal {
 
 
         System.out.println("\nInforme a partir de qual ano para pesquisar os episodios.");
-        var ano = leitura.nextInt();
-        leitura.nextLine();
+        var ano = ler.nextInt();
+        ler.nextLine();
         LocalDate dataBusca = LocalDate.of(ano, 1,1);
 
         episodios.stream()
