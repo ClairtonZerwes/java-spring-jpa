@@ -13,6 +13,8 @@ public class ConsumirDadosApi {
                 .uri(URI.create(endereco))
                 .build();
         HttpResponse<String> response = null;
+        System.out.println(endereco);
+
         try {
             response = client
                     .send(request, HttpResponse.BodyHandlers.ofString());

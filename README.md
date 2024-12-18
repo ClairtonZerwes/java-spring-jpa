@@ -1,34 +1,83 @@
 # ScreenMatch - Aplicação para Busca e Análise de Séries
-
+ 
 ## Descrição
 O ScreenMatch é uma aplicação Java que permite buscar informações detalhadas sobre séries em uma API externa "https://www.omdbapi.com". A aplicação oferece funcionalidades como:
 
 * Busca por série e exibição de informações gerais
-* Listagem de temporadas e episódios
-* Análise de avaliações por episódio e temporada
-* Busca por episódios por título e data de lançamento
+* Listagem de temporadas e episódios (Em Desenvolvimento)
+* Análise de avaliações por episódio e temporada (Em Desenvolvimento)
+* Busca por episódios por título e data de lançamento (Em Desenvolvimento)
+* Tem conexão com banco de dados PostGreSQL
+* Utiliza IA (ChatGPT, Google Gemini ou Api Memory) para tradução da sinopse de inglês para o português
+
+## Pré-requisitos
+
+* **Java Development Kit (JDK):** Versão 17 ou superior.
+* **Maven:** Para gerenciamento de dependências.
+* **Banco de dados PostgreSQL:** (opcional mudar na depencias para outro) Se você estiver utilizando o banco de dados PostgreSQL.
+* **Spring Boot:** Framework para desenvolvimento de aplicações Java.
+* **JPA:** Especificação para persistência de dados em Java.
+* Criar variáveis de ambiente para conexão com o banco "DB_URL, DB_USERNAME, DB_PASSWORD"
+* Criar uma chave de API no site da OMDb API
+
+
+* **Bibliotecas necessárias:**
+   * Jackson (para análise de JSON)
+   * Gson (para análise alternativa de JSON)
+   * Biblioteca cliente HTTP (ex: Apache HttpComponents)
+   * dotenv (para gerenciar a chave da API)
+
+
+
+### Dependências
+
+| Dependência | Descrição | Versão | Escopo |
+|---|---|---|---|
+| spring-boot-starter | Fornece as funcionalidades básicas do Spring Boot. | - | Compile |
+| spring-boot-starter-test | Utilitários de teste para aplicações Spring Boot. | test | test |
+| gson | Biblioteca para serialização e desserialização JSON. | 2.10.1 | Compile |
+| jackson-databind | Biblioteca alternativa para processamento JSON. | 2.18.1 | Compile |
+| dotenv-java | Permite o gerenciamento de variáveis de ambiente. | 3.0.2 | Compile |
+| openai-gpt3-java | Biblioteca para interagir com a API GPT-3 da OpenAI. | 0.14.0 | Compile |
+| spring-boot-starter-data-jpa | Fornece acesso a dados com JPA. | - | Compile |
+| postgresql | Driver de banco de dados PostgreSQL. | - | runtime |
+| spring-boot-starter-actuator | Fornece endpoints de monitoramento e gerenciamento. | - | Compile |
+| langchain4j-google-ai-gemini | Biblioteca para interagir com a API Google AI Gemini. | 0.36.2 | Compile |
+| spring-boot-devtools | Recarregamento automático durante o desenvolvimento. | - | runtime |
+| lombok | Reduz código repetitivo. | - | annotationProcessor |
 
 ## Como Usar
-1. **Pré-requisitos:**
-    * Java 8+ instalado
-    * Bibliotecas necessárias (Jackson, Gson, cliente HTTP, dotenv[apikey])
-    * Criar API key no site omdb
+
+**1. Compilando e Executando:**
+
+**Opção 1: Usando uma Ferramenta de Build (Maven):**
+
+Siga as instruções da ferramenta de build escolhida para compilar e executar o projeto.
+
+**Opção 2: Compilando Manualmente:**
+
+* Use um compilador Java para compilar as classes.
+* Execute a classe principal usando o comando `java`.
+
+**2. Interagindo com o Aplicativo:**
+
+* O aplicativo solicitará o nome da série para iniciar a busca.
+* Após a busca, você verá opções para listar as séries consultadas e salvas no banco de dados.
+Opções do Menu:
 
 
-2. **Compilar e Executar:**
-    * **Opção 1: Utilizando um build tool (Maven, Gradle):**
-        * Seguir as instruções do build tool para compilar e executar o projeto.
-    * **Opção 2: Compilando manualmente:**
-        * Utilizar o compilador Java para compilar as classes e executar a classe principal.
+* **=====  Menu  Principal  =====**
 
-
-3. **Interagir com a aplicação:**
-    * A aplicação solicitará o nome da série para iniciar a busca.
-    * Após a busca, serão apresentadas diversas opções de análise e filtro dos dados (utilizando stream), pesquisando e apresentando informações como listar top 5 episódios, consultar episódio a partir de um ano informado, pesquisar episódio por parte do título, imprimindo dados estatísticos com DoubleSummaryStatistics.
+*   **1 - Buscar Séries**
+*   **2 - Buscar Episódios**
+*   **3 - Listar Séries**
+*   **0 - Sair**
+*   **=============================**
 
 ## Estrutura do Projeto
 * **model:** Contém as classes que representam os dados da série, temporadas e episódios.
 * **service:** Contém a lógica para consumir a API e converter os dados.
+* **repository:** Contém as interfaces e implementações para acesso e persistência dos dados no banco de dados (ex: `SerieRepository`).
 * **principal:** Classe principal com a interface do usuário.
 * **utils:** Contém classes utilitárias, como a classe `CodificarURL`.
 
