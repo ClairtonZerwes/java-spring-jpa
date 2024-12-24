@@ -27,7 +27,8 @@ public class Serie {
     private String sinopse;
     // @Trasiente executa sem aparecer mensagem de erro no acesso do java jpa ao banco por não ter
     // o relacionamento da classe episodios/serie criando pk-fk entre a tabelas/classe na modelagem de dados
-    @Transient
+    // @Transient
+    @OneToMany(mappedBy = "serie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Episodio> episodios = new ArrayList<>();
 
     public Serie(DadosSerie dadosSerie) {
@@ -121,14 +122,14 @@ public class Serie {
 
     @Override
     public String toString() {
-        return "\nDados da Série -> " + titulo +
-                "\nTotal de Temporadas = " + totalTemporadas +
+        return "Dados da Série -> " + titulo +
+                "\n -> Total de Temporadas = " + totalTemporadas +
                 ", Avaliação = " + avaliacao +
                 ", Genêro = " + genero +
                 ", Atores Principais = " + atoresPrincipais +
                 ", URL do Poster = " + posterUrl +
-                ", Resumo Sinopse = " + sinopse
-                ;
+                ", Resumo Sinopse = " + sinopse +
+                " -> Episódios: " + episodios;
     }
 
     public long getId() {
@@ -137,5 +138,14 @@ public class Serie {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public List<Episodio> getEpisodios() {
+        return episodios;
+    }
+
+    public void setEpisodios(List<Episodio> episodios) {
+        episodios.forEach(episodio -> episodio.setSerie(this));
+        this.episodios = episodios;
     }
 }

@@ -27,6 +27,7 @@ public class Principal {
     private static DateTimeFormatter formatarDataBR = DateTimeFormatter.ofPattern("dd/MM/yyyy", new Locale("pt", "BR"));
     //@Autowired
     private SerieRepository serieRepository;
+    private List<Serie> seriesBD = new ArrayList<>();
 
     public Principal(SerieRepository serieRepository) {
         this.serieRepository = serieRepository;
@@ -56,12 +57,18 @@ public class Principal {
         while (opcaoMenu != 0) {
             try {
                 var menu = """
-                        \n=====  Menu  Principal  =====
+                        \n==================  Menu  Principal  ==================
                             1 - Buscar Séries
                             2 - Buscar Episódios
                             3 - Listar Series
+                            4 - Buscar Série por Título
+                            5 - Buscar Série por Ator
+                            6 - Listar Top 5 Séries
+                            7 - Buscar Séries por Categoria
+                            8 - Buscar Séries/Temporadas - Avaliação Mínima
                             0 - Sair
-                        =============================
+                        =======================================================
+                        Informe uma das opções acima [0 à 8]: 
                         """;
                 System.out.print(menu);
                 opcaoMenu = ler.nextInt();
@@ -77,6 +84,21 @@ public class Principal {
                     case 3:
                         listarSeriesConsultadas();
                         break;
+                    case 4:
+                        buscarSeriePorTituloParcial();
+                        break;
+                    case 5:
+                        buscarSeriesPorAtor();
+                        break;
+                    case 6:
+                        buscarTop5SeriesPorOrdemDeAvaliacaoDesc();
+                        break;
+                    case 7:
+                        buscarSeriesPorCategoria();
+                        break;
+                    case 8:
+                        buscarSeriesPorTemporadasComAvaliacaoMinima();
+                        break;
                     case 0:
                         System.out.println("\nFinalizando Programa...");
                         closeResources();
@@ -91,32 +113,104 @@ public class Principal {
         }
     }
 
+    private void buscarSeriesPorTemporadasComAvaliacaoMinima() {
+        System.out.println("Informe o total máximo de temporadas por série para filtrar: ");
+        var totalTemporadas = ler.nextInt();
+        ler.nextLine();
+        System.out.println("Informe o valor da avaliação mínima por ´serie/temporada para filtrar as séries: ");
+        var valorMinimoDaAvaliacao = ler.nextDouble();
+        ler.nextLine();
+
+        // Consulta derivada padrão JPA-Derived Queries
+        //List<Serie> seriesComAvaliacaoMinimaETotalTemporadas = serieRepository.findByTotalTemporadasLessThanEqualAndAvaliacaoGreaterThanEqual(totalTemporadas, valorMinimoDaAvaliacao);
+        // Consulta padrão JPQL (Java Persistence Query Language)
+        List<Serie> seriesComAvaliacaoMinimaETotalTemporadas = serieRepository.seriesFiltradaPorTotalTemporadaEAvaliacao(totalTemporadas, valorMinimoDaAvaliacao);
+
+        if (!seriesComAvaliacaoMinimaETotalTemporadas.isEmpty()) {
+            seriesComAvaliacaoMinimaETotalTemporadas.forEach(serie ->
+                    System.out.println("Título da Série: " + serie.getTitulo() + " - Avaliação: " + serie.getAvaliacao())
+            );
+        } else {
+            System.out.println("Não Foi Encontrado as Séries TOP 5!");
+        }
+    }
+
+    private void buscarSeriesPorCategoria() {
+        System.out.println("\nDigite uma Categoria/Gênero: ");
+        var nomeGenero = ler.nextLine();
+        Categoria categoriaEmPortugues = Categoria.fromStringPortugues(nomeGenero);
+
+        List<Serie> seriesPorCategoria = serieRepository.findByGenero(categoriaEmPortugues);
+
+        if (!seriesPorCategoria.isEmpty()) {
+            seriesPorCategoria.forEach(serie ->
+                    System.out.println("Título da Série: " + serie.getTitulo() + " - Categoria: " + serie.getGenero() + " - Avaliação: " + serie.getAvaliacao())
+            );
+        } else {
+            System.out.println("Não Foi Encontrado as Séries para o Gênero " + nomeGenero + "! ");
+        }
+
+    }
+
+    private void buscarTop5SeriesPorOrdemDeAvaliacaoDesc() {
+        List<Serie> serieTop5 = serieRepository.findTop5ByOrderByAvaliacaoDesc();
+
+        if (!serieTop5.isEmpty()) {
+            serieTop5.forEach(serie ->
+                    System.out.println("Título da Série: " + serie.getTitulo() + " - Avaliação: " + serie.getAvaliacao())
+            );
+        } else {
+            System.out.println("Não Foi Encontrado as Séries TOP 5!");
+        }
+    }
+
+    private void buscarSeriesPorAtor() {
+        System.out.println("Digite o nome do Ator para pesquisar as suas séries: ");
+        var nomeAtor = ler.nextLine();
+        System.out.println("Informe o valor da Avalição para consultar a partir deste valor: ");
+        var valorDaAvaliacao = ler.nextDouble();
+        ler.nextLine();
+
+        List<Serie> seriesDoAtorAvaliadas = serieRepository.findByAtoresPrincipaisContainingIgnoreCaseAndAvaliacaoGreaterThanEqual(nomeAtor, valorDaAvaliacao);
+
+        if (!seriesDoAtorAvaliadas.isEmpty()) {
+            System.out.println("Séries com Ator [" + nomeAtor + "]: ");
+            //System.out.println(seriesDoAtorAvaliadas);
+            seriesDoAtorAvaliadas.forEach(s ->
+                    System.out.println("Título da Série: " + s.getTitulo() + " - Avaliação: " + s.getAvaliacao()));
+        } else {
+            System.out.println("Séries não Encontrada para o Nome do Ator Infomado! ");
+        }
+    }
+
+    private void buscarSeriePorTituloParcial() {
+        System.out.println("Digite um Título pode ser o nome parcial: ");
+        var titulo = ler.nextLine();
+        Optional<Serie> serie = serieRepository.findByTituloContainsIgnoreCase(titulo);
+
+        if (serie.isPresent()) {
+            System.out.println("Dados da série -> " + serie.get());
+        } else {
+            System.out.println("Série não encontrado! ");
+        }
+    }
+
     private void listarSeriesConsultadas() {
-        /*List<Serie> series = new ArrayList<>();
-        series = dadosSerie.stream()
-                .map(d -> new Serie(d))
-                .collect(Collectors.toList());
+        System.out.println("\n--------------------------------------------");
+        System.out.println("| Listando Séries Salvas no Banco de Dados |");
+        System.out.println("--------------------------------------------");
 
-        System.out.println("\n-----------------------------------");
-        System.out.println("|  Listando  Séries  Consultadas  |");
-        System.out.println("-----------------------------------");
-        //dadosSerie.forEach(System.out::println);
-        series.stream()
-                .sorted(Comparator.comparing(Serie::getGenero))
-                .forEach(System.out::println);
-        System.out.println("\nPressione ENTER para voltar ao menu.");
-        ler.nextLine();
-        */
-        System.out.println("\n-------------------------------------");
-        System.out.println("| Listando Séries do Banco de Dados |");
-        System.out.println("-------------------------------------");
-
-        List<Serie> seriesBD = serieRepository.findAll();
-        seriesBD.stream()
-                .sorted(Comparator.comparing(Serie::getGenero))
-                .forEach(System.out::println);
-        System.out.println("\nPressione ENTER para voltar ao menu.");
-        ler.nextLine();
+        try {
+            seriesBD = serieRepository.findAll();
+            seriesBD.stream()
+                    .sorted(Comparator.comparing(Serie::getGenero))
+                    .forEach(System.out::println);
+            //System.out.println("Pressione ENTER para voltar ao menu.");
+            //ler.nextLine();
+        } catch (Exception e) {
+            System.out.println("Erro ao Listar Séries -> " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     private void buscarSerieImdbApi() {
@@ -128,8 +222,7 @@ public class Principal {
             Serie serie = new Serie(dadosConsulta);
             //serieRepository.save(new Serie(dadosConsulta));
             serieRepository.save(serie);
-            //System.out.println("\nLista Dados da Série -> \n" + dadosSerie);
-            System.out.println("\nBD - Dados da Série -> \n" + serie);
+            System.out.println("Serie adicionada com sucesso!" + serie);
         } catch (Exception e) {
             System.out.println("Exception Dados da Série -> " + e.getMessage());
         }
@@ -150,22 +243,60 @@ public class Principal {
             System.out.println("\nO nome da série não pode ser vazio.");
             return getDadosSeriesValidados();
         }
-
         return nomeSerie;
     }
 
     private void buscarEpisodioPorSerie() {
-        DadosSerie dadosSerie = getDadosSerie();
-        System.out.println("\nManipulando  Dados das Temporadas");
-        List<DadosTemporada> temporadas = new ArrayList<>();
+        //DadosSerie dadosSerie = getDadosSerie();
+        listarSeriesConsultadas();
+        var nomeSerie = obterNomeSerieDosEpisodios();
 
-        for (int i = 1; i <= dadosSerie.totalTemporadas(); i++) {
-            var json = consumirDadosApi.obterDados(Constantes.ENDERECO_API + CodificarURL.codificarStringParaURL(dadosSerie.titulo()) + "&season=" + i + "&apikey=" + Constantes.CODIGO_API_KEY_IMDB);
-            DadosTemporada dadosTemporada = converterDados.obterDados(json, DadosTemporada.class);
-            temporadas.add(dadosTemporada);
+        Optional<Serie> serie = buscarSeriePorNomeCompleto(nomeSerie);
+        System.out.println("buscasEpisodiosPorSerie() -> " + serie);
+
+        if (serie.isPresent()) {
+            var serieEncontrada = serie.get();
+            List<DadosTemporada> temporadas = new ArrayList<>();
+            for (int i = 1; i <= serieEncontrada.getTotalTemporadas(); i++) {
+                var json = consumirDadosApi.obterDados(Constantes.ENDERECO_API + CodificarURL.codificarStringParaURL(serieEncontrada.getTitulo()) + "&season=" + i + "&apikey=" + Constantes.CODIGO_API_KEY_IMDB);
+                DadosTemporada dadosTemporada = converterDados.obterDados(json, DadosTemporada.class);
+                temporadas.add(dadosTemporada);
+            }
+            temporadas.forEach(System.out::println);
+
+            List<Episodio> episodios = temporadas.stream()
+                    .flatMap(t -> t.episodios().stream()
+                            .map(e -> new Episodio(t.numeroDaTemporada(), e)))
+                    .collect(Collectors.toList());
+            serieEncontrada.setEpisodios(episodios);
+            serieRepository.save(serieEncontrada);
+        } else {
+            System.out.println("\nSérie não encontrada!");
         }
-        temporadas.forEach(System.out::println);
+    }
 
+    private Optional<Serie> buscarSeriePorNomeCompleto(String nomeSerie) {
+        try {
+            return seriesBD.stream()
+                    .filter(s -> s.getTitulo().toLowerCase().contains(nomeSerie.toLowerCase()))
+                    .findFirst();
+        } catch (NullPointerException e) {
+            System.out.println("A lista da série é nula: " + e.getMessage());
+            return Optional.empty();
+        } catch (Exception e) {
+            System.out.println("Ocorreu um erro inesperado: " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private String obterNomeSerieDosEpisodios() {
+        System.out.println("\nEscolha uma série e informe seu nome para pesquisar os episódios.: ");
+        var nomeSerie = ler.nextLine();
+        if (nomeSerie.isBlank()) {
+            System.out.println("Informe um nome de série válido!");
+            buscarEpisodioPorSerie();
+        }
+        return nomeSerie;
     }
 
     private void mensagemPadraoErroOpcaoMenu() {
